@@ -1,21 +1,27 @@
 #ifndef LIST_H
 #define LIST_H
 
+#include <cassert>
 #include <iostream>
+#include <stdexcept>
+#include <random>
 #include "node.h"
+
+constexpr int MAX_RANDOM = 1000;
+constexpr int MIN_RANDOM = 0;
 
 template<typename T>
 class List {
   public:
-	List() { }
+	List() : head(nullptr), tail(nullptr), numNodes(0) {};
 
-	List(T* arr) { }
+	List(T* arr, const std::size_t size) { }
 
-	List(Node<T>* node) { }
+	List(Node<T>* node) : head(node), tail(node), numNodes(1) { }
 
 	List(const std::size_t size) { }
 
-	virtual ~List() = 0;
+	virtual ~List() { }
 
 	List(const List& rhs) { }
 	List(const List&& rhs) { }
@@ -26,11 +32,11 @@ class List {
 	virtual T front() const = 0;
 	virtual T back() const = 0;
 
-	virtual void push_back(const T& value) = 0;
 	virtual void push_front(const T& value) = 0;
+	virtual void push_back(const T& value) = 0;
 
-	virtual T& pop_back() = 0;
-	virtual T& pop_front() = 0;
+	virtual T pop_front() = 0;
+	virtual T pop_back() = 0;
 
 	virtual T& operator[](const std::size_t index) = 0;
 
@@ -38,7 +44,7 @@ class List {
 
 	virtual std::size_t size() const = 0;
 
-	virtual std::size_t clear() = 0;
+	virtual void clear() = 0;
 
 	virtual void erase(Node<T>* node) = 0;
 
@@ -52,8 +58,10 @@ class List {
 
 	inline friend std::ostream& operator<<(std::ostream& o, const List<T>& list);
 
-  private:
+  protected:
 	Node<T>* head;
+	Node<T>* tail;
+	std::size_t numNodes;
 };
 
 #endif
