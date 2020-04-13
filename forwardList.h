@@ -59,23 +59,81 @@ class ForwardList : public List<T> {
 	}
 
 	ForwardList(const ForwardList& rhs) {
+	  auto current = rhs.head;
+	  auto thisCurrent = new Node<T>(current->value);
+	  this->head = thisCurrent;
 
+	  while (current->next != nullptr) {
+		current = current->next;
+		thisCurrent->next = new Node<T>(current->value);	
+		thisCurrent = thisCurrent->next;
+	  }
+
+	  this->tail = thisCurrent;
 	}
 
 	ForwardList(const ForwardList&& rhs) {
+	  auto current = rhs.head;
+	  auto thisCurrent = new Node<T>(current->value);
+	  this->head = thisCurrent;
 
+	  while (current->next != nullptr) {
+		auto tmp = current;
+		current = current->next;
+		thisCurrent->next = new Node<T>(current->value);	
+		thisCurrent = thisCurrent->next;
+		delete tmp;
+	  }
+
+	  this->numNodes = rhs.numNodes;
+	  this->tail = thisCurrent;
+
+	  rhs.numNodes = 0;
+	  rhs.head = nullptr;
+	  rhs.tail = nullptr;
 	}
 
 	ForwardList& operator=(const ForwardList& rhs) {
 	  if (&rhs == this)
 		return *this;
-	  // TODO: Finish Implementation
+
+	  auto current = rhs.head;
+	  auto thisCurrent = new Node<T>(current->value);
+	  this->head = thisCurrent;
+
+	  while (current->next != nullptr) {
+		current = current->next;
+		thisCurrent->next = new Node<T>(current->value);	
+		thisCurrent = thisCurrent->next;
+	  }
+
+	  this->tail = thisCurrent;
+
+	  return *this;
 	}
 
 	ForwardList& operator=(const ForwardList&& rhs) {
 	  if (&rhs == this)
 		return *this;
-	  // TODO: Finish Implementation
+
+	  auto current = rhs.head;
+	  auto thisCurrent = new Node<T>(current->value);
+	  this->head = thisCurrent;
+
+	  while (current->next != nullptr) {
+		auto tmp = current;
+		current = current->next;
+		thisCurrent->next = new Node<T>(current->value);	
+		thisCurrent = thisCurrent->next;
+		delete tmp;
+	  }
+
+	  this->numNodes = rhs.numNodes;
+	  this->tail = thisCurrent;
+
+	  rhs.numNodes = 0;
+	  rhs.head = nullptr;
+	  rhs.tail = nullptr;
 	}
 
 	T front() const override {
@@ -201,7 +259,10 @@ class ForwardList : public List<T> {
 	}
 
 	void insert(Node<T>* node, const T& value) override {
-
+	  auto newNode = new Node<T>(value);
+	  auto oldNext = node->next;
+	  node->next = newNode;
+	  newNode->next = oldNext;
 	}
 
 	void remove(const T& value) override {
