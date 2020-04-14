@@ -173,6 +173,10 @@ class ForwardList : public List<T> {
 	}
 
 	T pop_front() override {
+	  if (empty() || this->head == nullptr) {
+		std::out_of_range("List is empty");
+	  }
+
 	  auto tmp = this->head;
 	  auto val = tmp->value;
 	  this->head = tmp->next;
@@ -242,20 +246,23 @@ class ForwardList : public List<T> {
 
 	void erase(Node<T>* node) override {
 	  if (node == this->head) {
-		auto tmp = this->head;
-		this->head = tmp->next;
-		delete tmp;
+		this->head = this->head->next;
+		delete node;
+		this->numNodes--;
 		return;
 	  }
 
 	  auto curr = this->head;
 	  Node<T>* prev = nullptr;
-	  while (curr != node) {
-		curr = curr->next;
+	  while(curr != node) {
 		prev = curr;
+		curr = curr->next;
 	  }
+
+	  auto tmp = curr;
 	  prev->next = curr->next;
-	  delete curr;
+	  delete tmp;
+	  this->numNodes--;
 	}
 
 	void insert(Node<T>* node, const T& value) override {
@@ -263,26 +270,29 @@ class ForwardList : public List<T> {
 	  auto oldNext = node->next;
 	  node->next = newNode;
 	  newNode->next = oldNext;
+	  this->numNodes++;
 	}
 
 	void remove(const T& value) override {
-	  if (value == this->head->value) {
-		auto tmp = this->head;
-		this->head = tmp->next;
-		delete tmp;
-		this->numNodes--;
-		return;
-	  }
-
 	  auto curr = this->head;
 	  Node<T>* prev = nullptr;
-	  while (curr->value != value) {
-		curr = curr->next;
-		prev = curr;
+
+	  while (curr != nullptr) {
+		if (curr->value == value) {
+		  auto target = curr;
+		  if (prev != nullptr) {
+			prev->next = target->next;
+		  } else {
+			this->head = target->next;
+		  }
+		  curr = curr->next;
+		  delete target;
+		  this->numNodes--;
+		} else {
+		  curr = curr->next;
+		  prev = curr;
+		}
 	  }
-	  prev->next = curr->next;
-	  delete curr;
-	  this->numNodes--;
 	}
 
 	ForwardList& sort() override {
