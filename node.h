@@ -3,8 +3,10 @@
 
 template<typename T>
 struct Node {
-	T value;
-	Node<T>* next;
+
+  Node(const T val) : value(val) { }
+  T value;
+  Node<T>* next;
 };
 
 #endif
