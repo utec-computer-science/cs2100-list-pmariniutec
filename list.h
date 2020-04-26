@@ -29,14 +29,17 @@ class List {
 	List& operator=(const List& rhs);
 	List& operator=(const List&& rhs);
 
-	virtual T front() const = 0;
-	virtual T back() const = 0;
+	virtual T& front() = 0;
+	virtual T& back() = 0;
+
+	virtual const T& front() const = 0;
+	virtual const T& back() const = 0;
 
 	virtual void push_front(const T& value) = 0;
 	virtual void push_back(const T& value) = 0;
 
-	virtual T pop_front() = 0;
-	virtual T pop_back() = 0;
+	virtual T& pop_front() = 0;
+	virtual T& pop_back() = 0;
 
 	virtual T& operator[](const std::size_t index) = 0;
 
@@ -52,11 +55,9 @@ class List {
 
 	virtual void remove(const T& value) = 0;
 
-	virtual List& sort() = 0;
+	virtual void sort() = 0;
 
-	virtual List& reverse() = 0;
-
-	inline friend std::ostream& operator<<(std::ostream& o, const List<T>& list);
+	virtual void reverse() = 0;
 
   protected:
 	Node<T>* head;

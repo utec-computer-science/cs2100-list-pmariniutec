@@ -9,6 +9,9 @@
 template<typename T>
 class ForwardList : public List<T> {
   public:
+	using iterator = ForwardIterator<T>;
+	using const_iterator = ForwardIterator<const T>;
+
 	ForwardList() : List<T>() { }
 
 	ForwardList(T* arr, const std::size_t size) { 
@@ -36,7 +39,7 @@ class ForwardList : public List<T> {
 
 	  std::random_device dev;
 	  std::mt19937 rng(dev());
-	  std::uniform_int_distribution<std::mt19937::result_type> dist(MIN_RANDOM, MAX_RANDOM);
+	  std::uniform_int_distribution<int> dist(MIN_RANDOM, MAX_RANDOM);
 
 	  this->head = new Node<T>(dist(rng));
 	  auto current = this->head;
@@ -134,15 +137,29 @@ class ForwardList : public List<T> {
 	  rhs.numNodes = 0;
 	  rhs.head = nullptr;
 	  rhs.tail = nullptr;
+
+	  return *this;
 	}
 
-	T front() const override {
+	T& front() override {
 	  if (this->head == nullptr)
 		throw std::out_of_range("Head Out of range");
 	  return this->head->value;
 	}
 
-	T back() const override {
+	T& back() override {
+	  if (this->tail == nullptr)
+		throw std::out_of_range("Tail Out of range");
+	  return this->tail->value;
+	}
+
+	const T& front() const override {
+	  if (this->head == nullptr)
+		throw std::out_of_range("Head Out of range");
+	  return this->head->value;
+	}
+
+	const T& back() const override {
 	  if (this->tail == nullptr)
 		throw std::out_of_range("Tail Out of range");
 	  return this->tail->value;
@@ -151,8 +168,8 @@ class ForwardList : public List<T> {
 	void push_front(const T& value) override {
 	  auto node = new Node<T>(value);
 	  if (this->head != nullptr) {
-		node->next = this->head;
-		this->head = node->next;
+		this->head->next = node;
+		this->head = node;
 	  } else {
 		this->head = node;
 		this->tail = node;
@@ -172,48 +189,39 @@ class ForwardList : public List<T> {
 	  this->numNodes++;
 	}
 
-	T pop_front() override {
-	  if (empty() || this->head == nullptr) {
-		std::out_of_range("List is empty");
-	  }
-
-	  auto tmp = this->head;
-	  auto val = tmp->value;
-	  this->head = tmp->next;
+	T& pop_front() override {
+	  auto top = this->head;
+	  this->head = top->next;
 	  this->numNodes--;
-	  delete tmp;
-	  return val;
+	  return top->value;
 	}
 
-	T pop_back() override {
-	  T val;
+	T& pop_back() override {
 	  if (empty()) {
 		std::out_of_range("List is empty");
 	  } else if (this->numNodes == 1) {
-		val = this->tail->value;
-		delete this->tail;
+		auto bottom = this->tail;
 		this->head = this->tail = nullptr;
-	  } else {
-		auto tmp = this->head;
-		val = tmp->value;
-		while (tmp->next->next != nullptr) {
-		  tmp = tmp->next;
-		}
-		this->tail = tmp;
-		delete this->tail->next;
-		this->tail->next = nullptr;
+		this->numNodes--;
+		return bottom->value;
 	  }
+
+	  auto tmp = this->head;
+	  while (tmp->next->next != nullptr) {
+		tmp = tmp->next;
+	  }
+	  this->tail = tmp;
+	  auto bottom = this->tail->next;
 	  this->numNodes--;
-	  return val;
+	  return bottom->value;
 	}
 
-	T& operator[](const std::size_t index) override {
-	  if (index > size()) {
-		std::out_of_range("Index out of range");
-	  }
+	T& operator[](const size_t index) override {
+	  if (index > this->numNodes)
+		std::out_of_range("Index greater than size.");
 
 	  auto curr = this->head;
-	  for (std::size_t i = 0; i < index; ++i) {
+	  for (size_t i = 0; i < index; ++i) {
 		curr = curr->next; 
 	  }
 	  return curr->value;
@@ -228,9 +236,8 @@ class ForwardList : public List<T> {
 	}
 
 	void clear() override {
-	  if (empty()) {
+	  if (empty())
 		return;
-	  }
 
 	  auto curr = this->head;
 	  while (curr->next != nullptr) {
@@ -239,67 +246,17 @@ class ForwardList : public List<T> {
 		delete tmp;
 		this->numNodes--;
 	  }
+
 	  this->head = this->tail = nullptr;
 	  delete curr;
 	  this->numNodes--;
 	}
 
-	void erase(Node<T>* node) override {
-	  if (node == this->head) {
-		this->head = this->head->next;
-		delete node;
-		this->numNodes--;
-		return;
-	  }
-
-	  auto curr = this->head;
-	  Node<T>* prev = nullptr;
-	  while(curr != node) {
-		prev = curr;
-		curr = curr->next;
-	  }
-
-	  auto tmp = curr;
-	  prev->next = curr->next;
-	  delete tmp;
-	  this->numNodes--;
+	void sort() override {
+	  bubbleSort();   
 	}
 
-	void insert(Node<T>* node, const T& value) override {
-	  auto newNode = new Node<T>(value);
-	  auto oldNext = node->next;
-	  node->next = newNode;
-	  newNode->next = oldNext;
-	  this->numNodes++;
-	}
-
-	void remove(const T& value) override {
-	  auto curr = this->head;
-	  Node<T>* prev = nullptr;
-
-	  while (curr != nullptr) {
-		if (curr->value == value) {
-		  auto target = curr;
-		  if (prev != nullptr) {
-			prev->next = target->next;
-		  } else {
-			this->head = target->next;
-		  }
-		  curr = curr->next;
-		  delete target;
-		  this->numNodes--;
-		} else {
-		  curr = curr->next;
-		  prev = curr;
-		}
-	  }
-	}
-
-	ForwardList& sort() override {
-	  bubbleSort();
-	}
-
-	ForwardList& reverse() override {
+	void reverse() override {
 	  auto current = this->head;
 	  Node<T>* prev = nullptr;
 	  Node<T>* next = nullptr;
@@ -315,12 +272,27 @@ class ForwardList : public List<T> {
 	  this->head = prev;
 	}
 
-	ForwardIterator<T> begin() {
-	  return { this->head };
+	void merge(ForwardList<T> fl) {
+	  if (this->head == nullptr) {
+		this->head = fl.head;
+		this->tail = fl.tail;
+	  } else {
+		this->tail->next = fl.head;
+	  }
+
+	  this->numNodes += fl.numNodes;
 	}
 
-	ForwardIterator<T> end() {
-	  return { this->tail->next };
+	void erase(Node<T>* node) override {
+
+	}
+
+	void insert(Node<T>* node, const T& value) override {
+
+	}
+
+	void remove(const T& value) override {
+
 	}
 
 	inline friend std::ostream& operator<<(std::ostream& o, const ForwardList<T>& fl) {
@@ -329,34 +301,48 @@ class ForwardList : public List<T> {
 		o << current->value << ' ';
 		current = current->next;
 	  }
-	  o << '\n';
 	  return o;
+	}
+
+	iterator begin() {
+	  return { this->head };
+	}
+
+	iterator end() {
+	  return { this->tail->next };
+	}
+
+	const_iterator cbegin() {
+	  return { this->head };
+	}
+
+	const_iterator cend() {
+	  return { this->tail->next };
 	}
 
   private:
 	void bubbleSort() {
-	  int swapped;
-	  Node<T>* ptr1;
+	  bool swapped;
+	  Node<T>* curr;
 	  Node<T>* lptr = nullptr;
 
 	  if (this->head == NULL)
 		return;
 
 	  do {
-		swapped = 0;
-		ptr1 = this->head;
+		swapped = true;
+		curr = this->head;
 
-		while (ptr1->next != lptr) {
-		  if (ptr1->value > ptr1->next->value) {
-			std::swap(ptr1->value, ptr1->next->value);
-			swapped = 1;
+		while (curr->next != lptr) {
+		  if (curr->value > curr->next->value) {
+			std::swap(curr->value, curr->next->value);
+			swapped = false;
 		  }
-		  ptr1 = ptr1->next;
+		  curr = curr->next;
 		}
-		lptr = ptr1;
+		lptr = curr;
 	  } while (swapped);
 	}
-
 };
 
 #endif

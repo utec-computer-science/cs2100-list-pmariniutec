@@ -26,10 +26,15 @@ class ForwardIterator : public Iterator<T> {
 	  return *this;
 	}
 
+	ForwardIterator<T> operator++(int) {
+	  ++(*this);
+	  return *this;
+	}
+
 	T operator*() override {
 	  if (this->current == nullptr)
 		throw std::out_of_range("Iterator Out of range");
-	  return this->current->data;
+	  return this->current->value;
 	}
 };
 
